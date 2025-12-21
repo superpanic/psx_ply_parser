@@ -1,11 +1,9 @@
-TARGET = hellopgu
+TARGET = hellotexture
 TYPE = ps-exe
-
 SRCS = \
 third_party/nugget/common/crt0/crt0.s \
-main.c
-
-CPPFLAGS += -Ithird_party/psyq-iwyu/include
+$(wildcard source/*.c)
+CPPFLAGS += -Ithird_party/psyq-iwyu/include -Isource
 LDFLAGS += -Lthird_party/psyq/lib
 LDFLAGS += -Wl,--start-group
 LDFLAGS += -lapi
