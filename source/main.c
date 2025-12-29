@@ -23,6 +23,7 @@ MATRIX viewmat = {0};
 Camera camera;
 
 Object object;
+Object face;
 
 TIM_IMAGE tim;
 
@@ -121,7 +122,14 @@ void Setup(void) {
 	setVector(&object.vel, 0, 0, 0);
 	setVector(&object.acc, 0, 1, 0);
 
+	setVector(&face.position, 0, 0, 0);
+	setVector(&face.rotation, 0, 0, 0);
+	setVector(&face.scale, ONE, ONE, ONE);
+	setVector(&face.vel, 0, 0, 0);
+	setVector(&face.acc, 0, 1, 0);
+
 	LoadModel("\\MODEL.BIN;1");
+	LoadPly("\\FACE.PLY;1", &face);
 	LoadTexture("\\METAL.TIM;1");
 
 }
@@ -206,6 +214,7 @@ void Update(void) {
 		}
 	}
 	object.rotation.vy += 20;
+
 }
 
 void Render(void) {
