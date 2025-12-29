@@ -15,8 +15,10 @@ typedef struct Object {
 	short numverts;
 	SVECTOR *vertices;
 
+	DVECTOR *uvs;
+
 	short numfaces; // faces
-	short *faces; // face indices = numfaces * 4
+	short *faces; // face indices = numfaces x 4 (or x 3)
 
 	short numcolors;
 	CVECTOR *colors;

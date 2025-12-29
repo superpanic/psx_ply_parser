@@ -1,4 +1,4 @@
-TARGET = hellotexture
+TARGET = helloblender
 TYPE = ps-exe
 SRCS = \
 third_party/nugget/common/crt0/crt0.s \

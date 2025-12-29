@@ -18,7 +18,7 @@
         
         <directory_tree>
             <file name="SYSTEM.CNF"	type="data"	source="SYSTEM.TXT"/>
-            <file name="MAIN.EXE"	type="data"	source="hellotexture.ps-exe"/>
+            <file name="MAIN.EXE"	type="data"	source="helloblender.ps-exe"/>
             <file name="MODEL.BIN"  	type="data" 	source="assets\MODEL.BIN"/>
 	    <file name="METAL.TIM"  	type="data" 	source="assets\METAL.TIM"/>
             
