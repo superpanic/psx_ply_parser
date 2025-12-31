@@ -152,20 +152,20 @@ void LoadPly(char *filename, Object *obj) {
 			vector_values[i] = v;
 			i++;
 		}
-		obj->vertices[vertex_count].vx = vector_values[0];
-		obj->vertices[vertex_count].vy = vector_values[1];
-		obj->vertices[vertex_count].vz = vector_values[2];
-		obj->uvs[vertex_count].vx = vector_values[3];
-		obj->uvs[vertex_count].vy = vector_values[4];
-		vertex_index++;
+		obj->vertices[vertex_index].vx = vector_values[0];
+		obj->vertices[vertex_index].vy = vector_values[1];
+		obj->vertices[vertex_index].vz = vector_values[2];
+		obj->uvs[vertex_index].vx = vector_values[3];
+		obj->uvs[vertex_index].vy = vector_values[4];
 		printf("Vertex %d: x:%d, y:%d, z:%d, u:%d, v:%d\n", 
 			vertex_index,
-			obj->vertices[vertex_count].vx,
-			obj->vertices[vertex_count].vy,
-			obj->vertices[vertex_count].vz,
-			obj->uvs[vertex_count].vx,
-			obj->uvs[vertex_count].vy
+			obj->vertices[vertex_index].vx,
+			obj->vertices[vertex_index].vy,
+			obj->vertices[vertex_index].vz,
+			obj->uvs[vertex_index].vx,
+			obj->uvs[vertex_index].vy
 		);
+		vertex_index++;
 	}
 
 	// parse faces

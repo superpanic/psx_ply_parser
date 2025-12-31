@@ -64,7 +64,7 @@ void Setup(void) {
 	setVector(&face.acc, 0, 1, 0);
 
 	//LoadModel("\\MODEL.BIN;1");
-	LoadPly("\\CUBE.PLY;1", &face);
+	LoadPly("\\MILK.PLY;1", &face);
 	LoadTexture("\\METAL.TIM;1");
 }
 
@@ -115,7 +115,7 @@ void Update(void) {
 	for(int i=0, q=0; i<face.numfaces * 3; i+=3, q++) {
 		poly = (POLY_F3*) GetNextPrim(); // flat triangle
 		setPolyF3(poly); // init a flat triangle
-		setRGB0(poly, 0, 0, 0);
+		setRGB0(poly, 10*i, 255-(10*i), 128-(10*i));
 
 		/*
 			poly->u0 =  0; poly->v0 =  0;
