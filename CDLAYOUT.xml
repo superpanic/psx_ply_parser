@@ -20,7 +20,7 @@
             <file name="SYSTEM.CNF"	type="data"	source="SYSTEM.TXT"/>
             <file name="MAIN.EXE"	type="data"	source="helloblender.ps-exe"/>
             <file name="MODEL.BIN"  	type="data" 	source="assets\MODEL.BIN"/>
-            <file name="FACE.PLY"  	type="data" 	source="assets\FACE.PLY"/>
+            <file name="CUBE.PLY"  	type="data" 	source="assets\CUBE.PLY"/>
 	    <file name="METAL.TIM"  	type="data" 	source="assets\METAL.TIM"/>
             
             <!-- <dir name="SUBDIR01">
