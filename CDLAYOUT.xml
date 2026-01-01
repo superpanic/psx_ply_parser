@@ -20,7 +20,7 @@
             <file name="SYSTEM.CNF"	type="data"	source="SYSTEM.TXT"/>
             <file name="MAIN.EXE"	type="data"	source="psx_ply_parser.ps-exe"/>
             <file name="MILK.PLY"  	type="data" 	source="assets\MILK.PLY"/>
-	    <file name="METAL.TIM"  	type="data" 	source="assets\METAL.TIM"/>
+	    <file name="MILK.TIM"  	type="data" 	source="assets\MILK.TIM"/>
             
             <!-- <dir name="SUBDIR01">
                 <file name="FILE1.TXT" type="data" source="assets\FILE1.TXT"/>

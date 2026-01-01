@@ -15,7 +15,7 @@
 
 extern char __heap_start, __sp;
 
-POLY_F3 *poly;
+POLY_FT3 *poly;
 
 MATRIX worldmat = {0};
 MATRIX viewmat = {0};
@@ -41,6 +41,7 @@ void LoadTexture(char *filename) {
 	LoadImage(tim.prect, tim.paddr);
 	DrawSync(0);
 	if(tim.mode & 0x8) {
+		printf("TIM texture file format is 4-bit\n");
 		LoadClut2(tim.caddr, tim.crect->x, tim.crect->y); // 16 bytes
 	}
 
@@ -63,9 +64,8 @@ void Setup(void) {
 	setVector(&face.vel, 0, 0, 0);
 	setVector(&face.acc, 0, 1, 0);
 
-	//LoadModel("\\MODEL.BIN;1");
 	LoadPly("\\MILK.PLY;1", &face);
-	LoadTexture("\\METAL.TIM;1");
+	LoadTexture("\\MILK.TIM;1");
 }
 
 void JoyPadCheckAll(void) {
@@ -113,18 +113,16 @@ void Update(void) {
 	SetTransMatrix(&viewmat);
 
 	for(int i=0, q=0; i<face.numfaces * 3; i+=3, q++) {
-		poly = (POLY_F3*) GetNextPrim(); // flat triangle
-		setPolyF3(poly); // init a flat triangle
-		setRGB0(poly, 10*i, 255-(10*i), 128-(10*i));
+		poly = (POLY_FT3*) GetNextPrim(); // flat triangle
+		setPolyFT3(poly); // init a flat triangle
+		setRGB0(poly, 10*i, 255-(10*i), 255-(10*i));
 
-		/*
-			poly->u0 =  0; poly->v0 =  0;
-			poly->u1 = 63; poly->v1 =  0;
-			poly->u2 =  0; poly->v2 =  63;
-		*/
-
-		// poly->tpage = getTPage(tim.mode, 0, tim.prect->x, tim.prect->y);
-		// poly->clut = getClut(tim.crect->x, tim.crect->y);
+		poly->u0 =  0; poly->v0 =  0;
+		poly->u1 = 63; poly->v1 =  0;
+		poly->u2 =  0; poly->v2 =  63;
+		
+		poly->tpage = getTPage(tim.mode, 0, tim.prect->x, tim.prect->y);
+		poly->clut = getClut(tim.crect->x, tim.crect->y);
 
 		nclip = RotAverageNclip3(
 			&face.vertices[face.faces[i+0]], 
@@ -142,7 +140,7 @@ void Update(void) {
 
 		if((otz > 0) && (otz < OT_LEN)) {
 			addPrim(GetOTAt(GetCurrentBuffer(), otz), poly);
-			IncrementNextPrim(sizeof(POLY_F3));
+			IncrementNextPrim(sizeof(POLY_FT3));
 		}
 	}
 	face.rotation.vy += 20;

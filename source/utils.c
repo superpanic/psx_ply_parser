@@ -20,9 +20,9 @@ char *FileRead(char *filename, u_long *length) {
 	buffer = NULL;
 
 	if (CdSearchFile(&filepos, filename)==NULL) {
-		printf("%s file not found on the CD. ", filename);
+		printf("%s file not found on the CD.\n", filename);
 	} else {
-		printf("Found %s on the CD. ", filename);
+		printf("Found %s on the CD.\n", filename);
 		numsectors = (filepos.size + 2047) / 2048;
 		buffer = (char*) malloc3(2048 * numsectors);
 		if(!buffer) {
