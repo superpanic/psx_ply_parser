@@ -7,3 +7,5 @@ PSX.Dev-README.md
 *.o
 *.a
 third_party/psyq
+third_party/nugget
+third_party/psyq-iwyu
