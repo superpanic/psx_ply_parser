@@ -203,9 +203,9 @@ void LoadPly(char *filename, Object *obj) {
 			printf("Face type unknown, is not 3 (triangle).\n");
 			goto exit;
 		}
-		obj->faces[face_index++] = face_values[1];
+		obj->faces[face_index++] = face_values[3]; // swap vertice 1 and 3 to flip normals
 		obj->faces[face_index++] = face_values[2];
-		obj->faces[face_index++] = face_values[3];
+		obj->faces[face_index++] = face_values[1]; // swap!
 	}
 
 	for(int i = 0; i < face_count; i++) {
