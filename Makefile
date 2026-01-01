@@ -1,4 +1,4 @@
-TARGET = helloblender
+TARGET = psx_ply_parser
 TYPE = ps-exe
 SRCS = \
 third_party/nugget/common/crt0/crt0.s \

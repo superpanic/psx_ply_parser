@@ -18,7 +18,7 @@
         
         <directory_tree>
             <file name="SYSTEM.CNF"	type="data"	source="SYSTEM.TXT"/>
-            <file name="MAIN.EXE"	type="data"	source="helloblender.ps-exe"/>
+            <file name="MAIN.EXE"	type="data"	source="psx_ply_parser.ps-exe"/>
             <file name="MILK.PLY"  	type="data" 	source="assets\MILK.PLY"/>
 	    <file name="METAL.TIM"  	type="data" 	source="assets\METAL.TIM"/>
             
