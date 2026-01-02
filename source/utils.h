@@ -6,7 +6,7 @@
 
 char *FileRead(char *filename, u_long *length);
 void LoadPly(char *filename, Object *obj);
-
+short ParseUVToByte(const char *str);
 char GetChar(u_char *bytes, u_long *b);
 
 short GetShortLE(u_char *bytes, u_long *b);

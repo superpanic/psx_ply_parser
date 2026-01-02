@@ -22,7 +22,7 @@ MATRIX viewmat = {0};
 
 Camera camera;
 
-Object face;
+Object obj;
 
 TIM_IMAGE tim;
 
@@ -58,13 +58,13 @@ void Setup(void) {
 	setVector(&camera.position, 500, -1000, -1200);
 	camera.lookat = (MATRIX){0};
 
-	setVector(&face.position, 0, 0, 0);
-	setVector(&face.rotation, 0, 0, 0);
-	setVector(&face.scale, ONE, ONE, ONE);
-	setVector(&face.vel, 0, 0, 0);
-	setVector(&face.acc, 0, 1, 0);
+	setVector(&obj.position, 0, 0, 0);
+	setVector(&obj.rotation, 0, 0, 0);
+	setVector(&obj.scale, ONE, ONE, ONE);
+	setVector(&obj.vel, 0, 0, 0);
+	setVector(&obj.acc, 0, 1, 0);
 
-	LoadPly("\\MILK.PLY;1", &face);
+	LoadPly("\\MILK.PLY;1", &obj);
 	LoadTexture("\\MILK.TIM;1");
 }
 
@@ -99,12 +99,12 @@ void Update(void) {
 	JoyPadCheckAll();
 	
 	VECTOR up = (VECTOR){0,-ONE,0};
-	LookAt(&camera,&camera.position,&face.position,&up);
+	LookAt(&camera,&camera.position,&obj.position,&up);
 
 	// world matrix transform
-	RotMatrix(&face.rotation, &worldmat);
-	TransMatrix(&worldmat, &face.position);
-	ScaleMatrix(&worldmat, &face.scale);
+	RotMatrix(&obj.rotation, &worldmat);
+	TransMatrix(&worldmat, &obj.position);
+	ScaleMatrix(&worldmat, &obj.scale);
 
 	// create the view matrix, combining the world matrix and the lookat matrix
 	CompMatrixLV(&camera.lookat, &worldmat, &viewmat);
@@ -112,22 +112,25 @@ void Update(void) {
 	SetRotMatrix(&viewmat);
 	SetTransMatrix(&viewmat);
 
-	for(int i=0, q=0; i<face.numfaces * 3; i+=3, q++) {
+	for(int i=0, q=0; i<obj.numfaces * 3; i+=3, q++) {
 		poly = (POLY_FT3*) GetNextPrim(); // flat triangle
 		setPolyFT3(poly); // init a flat triangle
-		setRGB0(poly, 10*i, 255-(10*i), 255-(10*i));
+		setRGB0(poly, 255, 255, 255);
 
-		poly->u0 =  0; poly->v0 =  0;
-		poly->u1 = 63; poly->v1 =  0;
-		poly->u2 =  0; poly->v2 =  63;
-		
 		poly->tpage = getTPage(tim.mode, 0, tim.prect->x, tim.prect->y);
 		poly->clut = getClut(tim.crect->x, tim.crect->y);
 
+		poly->u0 = obj.uvs[obj.faces[i+0]].vx; 
+		poly->v0 = obj.uvs[obj.faces[i+0]].vy;
+		poly->u1 = obj.uvs[obj.faces[i+1]].vx; 
+		poly->v1 = obj.uvs[obj.faces[i+1]].vy;
+		poly->u2 = obj.uvs[obj.faces[i+2]].vx; 
+		poly->v2 = obj.uvs[obj.faces[i+2]].vy;
+		
 		nclip = RotAverageNclip3(
-			&face.vertices[face.faces[i+0]], 
-			&face.vertices[face.faces[i+1]], 
-			&face.vertices[face.faces[i+2]],
+			&obj.vertices[obj.faces[i+0]], 
+			&obj.vertices[obj.faces[i+1]], 
+			&obj.vertices[obj.faces[i+2]],
 			(long*)&poly->x0, 
 			(long*)&poly->x1, 
 			(long*)&poly->x2,
@@ -143,7 +146,7 @@ void Update(void) {
 			IncrementNextPrim(sizeof(POLY_FT3));
 		}
 	}
-	face.rotation.vy += 20;
+	obj.rotation.vy += 20;
 
 }
 

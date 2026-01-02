@@ -125,9 +125,9 @@ void LoadPly(char *filename, Object *obj) {
 	u_long vertex_index = 0;
 	while( vertex_index < vertex_count ) {
 		// we are going to step throught all vertices
-		short vector_values[5]; // x y z u v
+		short vector_values[3]; // x y z
 		u_char i = 0;
-		while(i<5) {
+		while(i<3) {
 			if(byte_counter >= length) {
 				printf("Reached end of file\n");
 				goto exit;
@@ -152,11 +152,24 @@ void LoadPly(char *filename, Object *obj) {
 			vector_values[i] = v;
 			i++;
 		}
+
+		// parse U
+		char *scan = data+byte_counter;
+		short u = ParseUVToByte(scan);
+		while (*scan && !(*scan == ' ' || *scan == '\t' || *scan == '\n' || *scan == '\r')) scan++;
+		while (*scan == ' ' || *scan == '\t' || *scan == '\n' || *scan == '\r') scan++;
+
+		// parse V
+		short v = ParseUVToByte(scan);
+		// Advance byte_counter to after this line
+		while (*(data + byte_counter) != '\n' && byte_counter < length) byte_counter++;
+		byte_counter++;
+
 		obj->vertices[vertex_index].vx = vector_values[0];
 		obj->vertices[vertex_index].vy = vector_values[1];
 		obj->vertices[vertex_index].vz = vector_values[2];
-		obj->uvs[vertex_index].vx = vector_values[3];
-		obj->uvs[vertex_index].vy = vector_values[4];
+		obj->uvs[vertex_index].vx = u;
+		obj->uvs[vertex_index].vy = v;
 		printf("Vertex %d: x:%d, y:%d, z:%d, u:%d, v:%d\n", 
 			vertex_index,
 			obj->vertices[vertex_index].vx,
@@ -203,9 +216,9 @@ void LoadPly(char *filename, Object *obj) {
 			printf("Face type unknown, is not 3 (triangle).\n");
 			goto exit;
 		}
-		obj->faces[face_index++] = face_values[3]; // swap vertice 1 and 3 to flip normals
+		obj->faces[face_index++] = face_values[3]; // <- swap vertice 1 and 3 to flip normals
 		obj->faces[face_index++] = face_values[2];
-		obj->faces[face_index++] = face_values[1]; // swap!
+		obj->faces[face_index++] = face_values[1]; // <- swap 1 and 3!
 	}
 
 	for(int i = 0; i < face_count; i++) {
@@ -220,6 +233,67 @@ void LoadPly(char *filename, Object *obj) {
 exit:
 	free3(data);
 	return;
+}
+
+// Convert a normalized UV string (e.g. "0.625" or "1" or "0.000") to 0..63 integer
+// Assumes texture is 64x64 (so max coord = 63)
+// Uses only integer math – safe on PS1
+short ParseUVToByte(const char *str) {
+    long integer_part = 0;
+    long fractional_part = 0;
+    int frac_digits = 0;
+    int sign = 1;
+    int is_negative = 0;
+
+    // Skip whitespace
+    while (*str == ' ' || *str == '\t') str++;
+
+    // Sign (shouldn't happen for UVs, but safe)
+    if (*str == '-') { is_negative = 1; str++; }
+    else if (*str == '+') str++;
+
+    // Integer part (usually 0 or 1 for normalized UVs)
+    while (*str >= '0' && *str <= '9') {
+        integer_part = integer_part * 10 + (*str - '0');
+        str++;
+    }
+
+    // Fractional part
+    if (*str == '.') {
+        str++;
+        while (*str >= '0' && *str <= '9' && frac_digits < 6) {  // 6 digits is plenty
+            fractional_part = fractional_part * 10 + (*str - '0');
+            frac_digits++;
+            str++;
+        }
+    }
+
+    // Combine: value = integer_part + fractional_part / 10^frac_digits
+    // Then scale to 0..63 range: uv_byte = (value * 64)  (clamped)
+    long value = integer_part;
+
+    if (frac_digits > 0) {
+        // Shift fractional part up to full integer
+        while (frac_digits < 6) {
+            fractional_part *= 10;
+            frac_digits++;
+        }
+        value = integer_part * 1000000L + fractional_part;  // now value = x.xxxxxx in "millionths"
+    } else {
+        value *= 1000000L;  // no decimal → treat as whole
+    }
+
+    // Apply sign (rare for UVs)
+    if (is_negative) value = -value;
+
+    // Scale to 0..64 (we want 0..63)
+    long scaled = value * 64L / 1000000L;
+
+    // Clamp to 0..63
+    if (scaled < 0) scaled = 0;
+    if (scaled > 63) scaled = 63;
+
+    return (short)scaled;
 }
 
 char GetChar(u_char *bytes, u_long *b) {
