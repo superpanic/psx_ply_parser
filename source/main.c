@@ -39,6 +39,11 @@ void LoadTexture(char *filename) {
 	ReadTIM(&tim);
 
 	LoadImage(tim.prect, tim.paddr);
+	printf("picture rect x:%i y:%i\n", tim.prect->x, tim.prect->y);
+	printf("picture rect w:%i h:%i\n", tim.prect->w, tim.prect->h);
+	printf("picture clut x:%i y:%i\n", tim.crect->x, tim.crect->y);
+	printf("picture clut w:%i h:%i\n", tim.crect->w, tim.crect->h);
+
 	DrawSync(0);
 	if(tim.mode & 0x8) {
 		printf("TIM texture file format is 4-bit\n");
@@ -55,7 +60,8 @@ void Setup(void) {
 	JoyPadInit();
 	ResetNextPrim(GetCurrentBuffer());
 
-	setVector(&camera.position, 500, -1000, -1200);
+//	setVector(&camera.position, 500, -1000, -1200);
+	setVector(&camera.position, 0, -1000, -1200);
 	camera.lookat = (MATRIX){0};
 
 	setVector(&obj.position, 0, 0, 0);
@@ -64,8 +70,8 @@ void Setup(void) {
 	setVector(&obj.vel, 0, 0, 0);
 	setVector(&obj.acc, 0, 1, 0);
 
-	LoadPly("\\MILK.PLY;1", &obj);
-	LoadTexture("\\MILK.TIM;1");
+	LoadPly("\\TRIANGLE.PLY;1", &obj);
+	LoadTexture("\\TRIANGLE.TIM;1");
 }
 
 void JoyPadCheckAll(void) {
@@ -120,12 +126,9 @@ void Update(void) {
 		poly->tpage = getTPage(tim.mode, 0, tim.prect->x, tim.prect->y);
 		poly->clut = getClut(tim.crect->x, tim.crect->y);
 
-		poly->u0 = obj.uvs[obj.faces[i+0]].vx; 
-		poly->v0 = obj.uvs[obj.faces[i+0]].vy;
-		poly->u1 = obj.uvs[obj.faces[i+1]].vx; 
-		poly->v1 = obj.uvs[obj.faces[i+1]].vy;
-		poly->u2 = obj.uvs[obj.faces[i+2]].vx; 
-		poly->v2 = obj.uvs[obj.faces[i+2]].vy;
+		poly->u0 = (u_char)obj.uvs[obj.faces[i+0]].vx; poly->v0 = (u_char)obj.uvs[obj.faces[i+0]].vy;
+		poly->u1 = (u_char)obj.uvs[obj.faces[i+1]].vx; poly->v1 = (u_char)obj.uvs[obj.faces[i+1]].vy;
+		poly->u2 = (u_char)obj.uvs[obj.faces[i+2]].vx; poly->v2 = (u_char)obj.uvs[obj.faces[i+2]].vy;
 		
 		nclip = RotAverageNclip3(
 			&obj.vertices[obj.faces[i+0]], 
@@ -146,7 +149,7 @@ void Update(void) {
 			IncrementNextPrim(sizeof(POLY_FT3));
 		}
 	}
-	obj.rotation.vy += 20;
+	//obj.rotation.vy += 20;
 
 }
 

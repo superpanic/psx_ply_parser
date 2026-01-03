@@ -17,10 +17,10 @@
         <license file="LCNSFILE\LICENSEE.DAT"/>
         
         <directory_tree>
-            <file name="SYSTEM.CNF"	type="data"	source="SYSTEM.TXT"/>
-            <file name="MAIN.EXE"	type="data"	source="psx_ply_parser.ps-exe"/>
-            <file name="MILK.PLY"  	type="data" 	source="assets\MILK.PLY"/>
-	    <file name="MILK.TIM"  	type="data" 	source="assets\MILK.TIM"/>
+		<file name="SYSTEM.CNF"		type="data"	source="SYSTEM.TXT"/>
+		<file name="MAIN.EXE"		type="data"	source="psx_ply_parser.ps-exe"/>
+		<file name="TRIANGLE.PLY"  	type="data" 	source="assets\TRIANGLE.PLY"/>
+		<file name="TRIANGLE.TIM"  	type="data" 	source="assets\TRIANGLE.TIM"/>
             
             <!-- <dir name="SUBDIR01">
                 <file name="FILE1.TXT" type="data" source="assets\FILE1.TXT"/>

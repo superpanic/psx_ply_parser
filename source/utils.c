@@ -156,6 +156,7 @@ void LoadPly(char *filename, Object *obj) {
 
 		// parse U
 		char *scan = data+byte_counter;
+		while (*scan == ' ' || *scan == '\t' || *scan == '\n' || *scan == '\r') scan++;
 		short u = ParseUVToByte(scan, false);
 		while (*scan && !(*scan == ' ' || *scan == '\t' || *scan == '\n' || *scan == '\r')) scan++;
 		while (*scan == ' ' || *scan == '\t' || *scan == '\n' || *scan == '\r') scan++;
@@ -166,9 +167,9 @@ void LoadPly(char *filename, Object *obj) {
 		while (*(data + byte_counter) != '\n' && byte_counter < length) byte_counter++;
 		byte_counter++;
 
-		obj->vertices[vertex_index].vx = vector_values[0];
+		obj->vertices[vertex_index].vx = vector_values[0]; // <- flip with last vertex
 		obj->vertices[vertex_index].vy = vector_values[1];
-		obj->vertices[vertex_index].vz = vector_values[2];
+		obj->vertices[vertex_index].vz = vector_values[2]; // <- flip with first vertex
 		obj->uvs[vertex_index].vx = u;
 		obj->uvs[vertex_index].vy = v;
 		printf("Vertex %d: x:%d, y:%d, z:%d, u:%d, v:%d\n", 
@@ -217,9 +218,9 @@ void LoadPly(char *filename, Object *obj) {
 			printf("Face type unknown, is not 3 (triangle).\n");
 			goto exit;
 		}
-		obj->faces[face_index++] = face_values[3]; // <- swap vertice 1 and 3 to flip normals
+		obj->faces[face_index++] = face_values[3]; //<- flip with last vertice
 		obj->faces[face_index++] = face_values[2];
-		obj->faces[face_index++] = face_values[1]; // <- swap 1 and 3!
+		obj->faces[face_index++] = face_values[1]; //<- flip with first vertice
 	}
 
 	for(int i = 0; i < face_count; i++) {
@@ -240,63 +241,65 @@ exit:
 // Assumes texture is 64x64 (so max coord = 63)
 // Uses only integer math – safe on PS1
 short ParseUVToByte(const char *str, bool flip) {
-    long integer_part = 0;
-    long fractional_part = 0;
-    int frac_digits = 0;
-    int sign = 1;
-    int is_negative = 0;
+	long integer_part = 0;
+	long fractional_part = 0;
+	int frac_digits = 0;
+	int sign = 1;
+	int is_negative = 0;
 
-    // Skip whitespace
-    while (*str == ' ' || *str == '\t') str++;
+	// Skip whitespace
+	while (*str == ' ' || *str == '\t') str++;
 
-    // Sign (shouldn't happen for UVs, but safe)
-    if (*str == '-') { is_negative = 1; str++; }
-    else if (*str == '+') str++;
+	// Sign (shouldn't happen for UVs, but safe)
+	if (*str == '-') { is_negative = 1; str++; }
+	else if (*str == '+') str++;
 
-    // Integer part (usually 0 or 1 for normalized UVs)
-    while (*str >= '0' && *str <= '9') {
-        integer_part = integer_part * 10 + (*str - '0');
-        str++;
-    }
+	// Integer part (usually 0 or 1 for normalized UVs)
+	while (*str >= '0' && *str <= '9') {
+		integer_part = integer_part * 10 + (*str - '0');
+		str++;
+	}
 
-    // Fractional part
-    if (*str == '.') {
-        str++;
-        while (*str >= '0' && *str <= '9' && frac_digits < 6) {  // 6 digits is plenty
-            fractional_part = fractional_part * 10 + (*str - '0');
-            frac_digits++;
-            str++;
-        }
-    }
+	// Fractional part
+	if (*str == '.') {
+		str++;
+		while (*str >= '0' && *str <= '9' && frac_digits < 6) {  // 6 digits is plenty
+		fractional_part = fractional_part * 10 + (*str - '0');
+		frac_digits++;
+		str++;
+		}
+	}
 
-    // Combine: value = integer_part + fractional_part / 10^frac_digits
-    // Then scale to 0..63 range: uv_byte = (value * 64)  (clamped)
-    long value = integer_part;
+	// Combine: value = integer_part + fractional_part / 10^frac_digits
+	// Then scale to 0..63 range: uv_byte = (value * 64)  (clamped)
+	long value = integer_part;
 
-    if (frac_digits > 0) {
-        // Shift fractional part up to full integer
-        while (frac_digits < 6) {
-            fractional_part *= 10;
-            frac_digits++;
-        }
-        value = integer_part * 1000000L + fractional_part;  // now value = x.xxxxxx in "millionths"
-    } else {
-        value *= 1000000L;  // no decimal → treat as whole
-    }
+	if (frac_digits > 0) {
+		// Shift fractional part up to full integer
+		while (frac_digits < 6) {
+		fractional_part *= 10;
+		frac_digits++;
+		}
+		value = integer_part * 1000000L + fractional_part;  // now value = x.xxxxxx in "millionths"
+	} else {
+		value *= 1000000L;  // no decimal → treat as whole
+	}
 
-    // Apply sign (rare for UVs)
-    if (is_negative) value = -value;
+	// Apply sign (rare for UVs)
+	if (is_negative) value = -value;
 
-    // Scale to 0..64 (we want 0..63)
-    long scaled = value * 64L / 1000000L;
+	// Scale to 0..64 (we want 0..63)
+	long scaled = value * 64L / 1000000L;
 
-    // Clamp to 0..63
-    if (scaled < 0) scaled = 0;
-    if (scaled > 63) scaled = 63;
+	// Clamp to 0..63
+	if (scaled < 0) scaled = 0;
+	if (scaled > 63) scaled = 63;
 
-    if(flip) scaled = 63-scaled;
+    	if(flip) {
+		scaled = 63-scaled;
+	}
 
-    return (short)scaled;
+	return (short)scaled;
 }
 
 char GetChar(u_char *bytes, u_long *b) {
