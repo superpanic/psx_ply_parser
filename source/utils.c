@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <libcd.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 #define INT32_MIN   ((long)0x80000000)  // −2,147,483,648
 #define INT32_MAX   ((long)0x7FFFFFFF)  // +2,147,483,647
@@ -155,12 +156,12 @@ void LoadPly(char *filename, Object *obj) {
 
 		// parse U
 		char *scan = data+byte_counter;
-		short u = ParseUVToByte(scan);
+		short u = ParseUVToByte(scan, false);
 		while (*scan && !(*scan == ' ' || *scan == '\t' || *scan == '\n' || *scan == '\r')) scan++;
 		while (*scan == ' ' || *scan == '\t' || *scan == '\n' || *scan == '\r') scan++;
 
 		// parse V
-		short v = ParseUVToByte(scan);
+		short v = ParseUVToByte(scan, true);
 		// Advance byte_counter to after this line
 		while (*(data + byte_counter) != '\n' && byte_counter < length) byte_counter++;
 		byte_counter++;
@@ -238,7 +239,7 @@ exit:
 // Convert a normalized UV string (e.g. "0.625" or "1" or "0.000") to 0..63 integer
 // Assumes texture is 64x64 (so max coord = 63)
 // Uses only integer math – safe on PS1
-short ParseUVToByte(const char *str) {
+short ParseUVToByte(const char *str, bool flip) {
     long integer_part = 0;
     long fractional_part = 0;
     int frac_digits = 0;
@@ -292,6 +293,8 @@ short ParseUVToByte(const char *str) {
     // Clamp to 0..63
     if (scaled < 0) scaled = 0;
     if (scaled > 63) scaled = 63;
+
+    if(flip) scaled = 63-scaled;
 
     return (short)scaled;
 }
