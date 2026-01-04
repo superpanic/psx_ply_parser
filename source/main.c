@@ -39,10 +39,10 @@ void LoadTexture(char *filename) {
 	ReadTIM(&tim);
 
 	LoadImage(tim.prect, tim.paddr);
-	printf("picture rect x:%i y:%i\n", tim.prect->x, tim.prect->y);
-	printf("picture rect w:%i h:%i\n", tim.prect->w, tim.prect->h);
-	printf("picture clut x:%i y:%i\n", tim.crect->x, tim.crect->y);
-	printf("picture clut w:%i h:%i\n", tim.crect->w, tim.crect->h);
+	printf("picture x:%i y:%i\n", tim.prect->x, tim.prect->y);
+	printf("picture w:%i h:%i\n", tim.prect->w, tim.prect->h);
+	printf("clut x:%i y:%i\n", tim.crect->x, tim.crect->y);
+	printf("clut w:%i h:%i\n", tim.crect->w, tim.crect->h);
 
 	DrawSync(0);
 	if(tim.mode & 0x8) {
@@ -70,8 +70,8 @@ void Setup(void) {
 	setVector(&obj.vel, 0, 0, 0);
 	setVector(&obj.acc, 0, 1, 0);
 
-	LoadPly("\\TRIANGLE.PLY;1", &obj);
-	LoadTexture("\\TRIANGLE.TIM;1");
+	LoadPly("\\MILK.PLY;1", &obj);
+	LoadTexture("\\MILK.TIM;1");
 }
 
 void JoyPadCheckAll(void) {
@@ -149,7 +149,7 @@ void Update(void) {
 			IncrementNextPrim(sizeof(POLY_FT3));
 		}
 	}
-	//obj.rotation.vy += 20;
+	obj.rotation.vy += 20;
 
 }
 

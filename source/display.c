@@ -21,7 +21,7 @@ void ScreenInit(void) {
 	screen.draw[0].isbg = true;
 	screen.draw[1].isbg = true;
 
-	SetTheBackgroundClearColor(0, 0, 255);
+	SetTheBackgroundClearColor(30, 30, 35);
 	
 	currbuff = 0;
 	PutDispEnv(&screen.disp[currbuff]);
