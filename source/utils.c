@@ -1,5 +1,6 @@
 #include "utils.h"
 #include "globals.h"
+#include "stdint.h"
 #include "object.h"
 #include <string.h>
 #include <sys/types.h>
@@ -10,8 +11,8 @@
 #include <ctype.h>
 #include <stdbool.h>
 
-#define INT32_MIN   ((long)0x80000000)  // −2,147,483,648
-#define INT32_MAX   ((long)0x7FFFFFFF)  // +2,147,483,647
+//#define INT32_MIN   ((long)0x80000000)  // −2,147,483,648
+//#define INT32_MAX   ((long)0x7FFFFFFF)  // +2,147,483,647
 
 char *FileRead(char *filename, u_long *length) {
 	CdlFILE filepos;
@@ -37,7 +38,7 @@ char *FileRead(char *filename, u_long *length) {
 	return buffer;
 }
 
-void LoadPly(char *filename, Object *obj) { 
+void LoadPly(char *filename, Object *obj, long tsize) { 
 	char *data;
 	u_long length;
 
@@ -120,58 +121,56 @@ void LoadPly(char *filename, Object *obj) {
 	byte_counter = byte_counter + endh_str_len;
 	printf("Ply file end header found.\n");
 	
+
+
+	
 	// parse vertices
 	size_t num_len;
 	char *end_ptr;
 	u_long vertex_index = 0;
 	while( vertex_index < vertex_count ) {
-		// we are going to step throught all vertices
-		short vector_values[3]; // x y z
-		u_char i = 0;
-		while(i<3) {
-			if(byte_counter >= length) {
-				printf("Reached end of file\n");
-				goto exit;
-			}
-			short v = strtol(data+byte_counter, &end_ptr, 10);
-			num_len = end_ptr - (data+byte_counter);
-			if(num_len == 0) {
-				if(*(data+byte_counter) == '.') {
-					// advance the pointer past the decimal point
-					byte_counter++;
-					// advance the pointer past all subsequent digits (the decimal part)
-					while ( isdigit( *(data+byte_counter) ) ) {
-						byte_counter++;
-					}
-				} else {
-					byte_counter++;
-				}
-				continue;
-			}
-			// we found a value
-			byte_counter += num_len;	
-			vector_values[i] = v;
-			i++;
-		}
 
-		// parse U
-		char *scan = data+byte_counter;
-		while (*scan == ' ' || *scan == '\t' || *scan == '\n' || *scan == '\r') scan++;
-		short u = ParseUVToByte(scan, false);
-		while (*scan && !(*scan == ' ' || *scan == '\t' || *scan == '\n' || *scan == '\r')) scan++;
-		while (*scan == ' ' || *scan == '\t' || *scan == '\n' || *scan == '\r') scan++;
+		char *scan = data + byte_counter;
 
-		// parse V
-		short v = ParseUVToByte(scan, true);
-		// Advance byte_counter to after this line
-		while (*(data + byte_counter) != '\n' && byte_counter < length) byte_counter++;
-		byte_counter++;
+		// skip to x
+		while (*scan && isspace(*scan)) scan++;
+		short x = ParseCoordToFixed(scan, 1);  // Scale=100 preserves two decimals
+		while (*scan && (isdigit(*scan) || *scan == '.' || *scan == '-')) scan++;
 
-		obj->vertices[vertex_index].vx = vector_values[0]; // <- flip with last vertex
-		obj->vertices[vertex_index].vy = vector_values[1];
-		obj->vertices[vertex_index].vz = vector_values[2]; // <- flip with first vertex
+		// skip whitespace to y
+		while (*scan && isspace(*scan)) scan++;
+		short y = ParseCoordToFixed(scan, 1);
+		while (*scan && (isdigit(*scan) || *scan == '.' || *scan == '-')) scan++;
+
+		// skip to z
+		while (*scan && isspace(*scan)) scan++;
+		short z = ParseCoordToFixed(scan, 1);
+		while (*scan && (isdigit(*scan) || *scan == '.' || *scan == '-')) scan++;
+
+		// skip to u (s)
+		while (*scan && isspace(*scan)) scan++;
+		short u = ParseUVToByte(scan, false, tsize);
+		while (*scan && (isdigit(*scan) || *scan == '.' || *scan == '-')) scan++;
+
+		// skip to v (t)
+		while (*scan && isspace(*scan)) scan++;
+		short v = ParseUVToByte(scan, true, tsize);
+		while (*scan && (isdigit(*scan) || *scan == '.' || *scan == '-')) scan++;
+
+		// sync byte_counter
+		byte_counter = scan - data;
+
+		// skip trailing junk to end of line
+		while (byte_counter < length && data[byte_counter] != '\n') byte_counter++;
+		if (byte_counter < length) byte_counter++;
+
+		// store
+		obj->vertices[vertex_index].vx = x;
+		obj->vertices[vertex_index].vy = y;
+		obj->vertices[vertex_index].vz = z;
 		obj->uvs[vertex_index].vx = u;
 		obj->uvs[vertex_index].vy = v;
+
 		printf("Vertex %d: x:%d, y:%d, z:%d, u:%d, v:%d\n", 
 			vertex_index,
 			obj->vertices[vertex_index].vx,
@@ -181,6 +180,7 @@ void LoadPly(char *filename, Object *obj) {
 			obj->uvs[vertex_index].vy
 		);
 		vertex_index++;
+
 	}
 
 	// parse faces
@@ -237,10 +237,54 @@ exit:
 	return;
 }
 
-// Convert a normalized UV string (e.g. "0.625" or "1" or "0.000") to 0..63 integer
-// Assumes texture is 64x64 (so max coord = 63)
+// Parse float string to fixed-point short (e.g., scale=100 for two decimals: 1.23 → 123)
+short ParseCoordToFixed(const char *str, int scale) {
+	long result = 0;
+	int sign = 1;
+	int frac_digits = 0;
+
+	// Skip whitespace
+	while (*str == ' ' || *str == '\t') str++;
+
+	// Sign
+	if (*str == '-') { sign = -1; str++; }
+	else if (*str == '+') str++;
+
+	// Integer part
+	while (*str >= '0' && *str <= '9') {
+		result = result * 10 + (*str - '0');
+		str++;
+	}
+
+	// Fractional part (up to 6 digits)
+	if (*str == '.') {
+		str++;
+		while (*str >= '0' && *str <= '9' && frac_digits < 6) {
+			result = result * 10 + (*str - '0');
+			str++;
+			frac_digits++;
+		}
+	}
+
+	// Apply fractional scaling (pad to 6 digits for consistency)
+	while (frac_digits < 6) {
+		result *= 10;
+		frac_digits++;
+	}
+
+	// Apply sign and user scale (clamp to short range)
+	result *= sign;
+	result = (result * scale) / 1000000L;
+	if (result < INT16_MIN) result = INT16_MIN;
+	if (result > INT16_MAX) result = INT16_MAX;
+
+	return (short)result;
+}
+
+// Convert a normalized UV string (e.g. "0.625" or "1" or "0.000") to 0..size-1 integer
+// Assumes texture is sizexsize (so max coord = size-1)
 // Uses only integer math – safe on PS1
-short ParseUVToByte(const char *str, bool flip) {
+short ParseUVToByte(const char *str, bool flip, long size) {
 	long integer_part = 0;
 	long fractional_part = 0;
 	int frac_digits = 0;
@@ -271,7 +315,7 @@ short ParseUVToByte(const char *str, bool flip) {
 	}
 
 	// Combine: value = integer_part + fractional_part / 10^frac_digits
-	// Then scale to 0..63 range: uv_byte = (value * 64)  (clamped)
+	// Then scale to 0..size-1 range: uv_byte = (value * size)  (clamped)
 	long value = integer_part;
 
 	if (frac_digits > 0) {
@@ -288,15 +332,15 @@ short ParseUVToByte(const char *str, bool flip) {
 	// Apply sign (rare for UVs)
 	if (is_negative) value = -value;
 
-	// Scale to 0..64 (we want 0..63)
-	long scaled = value * 64L / 1000000L;
+	// Scale to 0..size
+	long scaled = value * size / 1000000L;
 
-	// Clamp to 0..63
+	// Clamp to 0..size-1
 	if (scaled < 0) scaled = 0;
-	if (scaled > 63) scaled = 63;
+	if (scaled > size-1) scaled = size-1;
 
     	if(flip) {
-		scaled = 63-scaled;
+		scaled = (size-1)-scaled;
 	}
 
 	return (short)scaled;

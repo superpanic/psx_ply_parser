@@ -70,7 +70,7 @@ void Setup(void) {
 	setVector(&obj.vel, 0, 0, 0);
 	setVector(&obj.acc, 0, 1, 0);
 
-	LoadPly("\\MILK.PLY;1", &obj);
+	LoadPly("\\MILK.PLY;1", &obj, 128L);
 	LoadTexture("\\MILK.TIM;1");
 }
 
@@ -121,7 +121,7 @@ void Update(void) {
 	for(int i=0, q=0; i<obj.numfaces * 3; i+=3, q++) {
 		poly = (POLY_FT3*) GetNextPrim(); // flat triangle
 		setPolyFT3(poly); // init a flat triangle
-		setRGB0(poly, 255, 255, 255);
+		setRGB0(poly, 127, 127, 127); // 127 neutral color
 
 		poly->tpage = getTPage(tim.mode, 0, tim.prect->x, tim.prect->y);
 		poly->clut = getClut(tim.crect->x, tim.crect->y);
@@ -150,7 +150,6 @@ void Update(void) {
 		}
 	}
 	obj.rotation.vy += 20;
-
 }
 
 void Render(void) {
