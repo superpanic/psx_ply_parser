@@ -30,7 +30,7 @@ void HeapSize(int size) {
 	InitHeap3((unsigned long *)(&__heap_start), (&__sp - size) - &__heap_start);
 }
 
-void LoadTexture(char *filename) {
+u_long LoadTexture(char *filename) {
 	u_long *data;
 	u_long length;
 	//TIM_IMAGE tim; // is currently global
@@ -51,6 +51,7 @@ void LoadTexture(char *filename) {
 	}
 
 	free(data);
+	return tim.prect->w << (2 - (tim.mode & 0x3));
 }
 
 void Setup(void) {
@@ -70,8 +71,8 @@ void Setup(void) {
 	setVector(&obj.vel, 0, 0, 0);
 	setVector(&obj.acc, 0, 1, 0);
 
-	LoadPly("\\MILK.PLY;1", &obj, 128L);
-	LoadTexture("\\MILK.TIM;1");
+	u_long tsize = LoadTexture("\\MILK.TIM;1");
+	LoadPly("\\MILK.PLY;1", &obj, tsize);
 }
 
 void JoyPadCheckAll(void) {
