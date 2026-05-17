@@ -19,11 +19,10 @@
         <directory_tree>
 		<file name="SYSTEM.CNF"		type="data"	source="SYSTEM.TXT"/>
 		<file name="MAIN.EXE"		type="data"	source="psx_ply_parser.ps-exe"/>
-		<file name="CUBE.PLY"  		type="data" 	source="assets\CUBE.PLY"/>
-		<file name="GRID.TIM"  		type="data" 	source="assets\GRID.TIM"/>
 		<file name="MILK.PLY"  		type="data" 	source="assets\MILK.PLY"/>
 		<file name="MILK.TIM"  		type="data" 	source="assets\MILK.TIM"/>
-		<file name="UV_GRID.TIM"  	type="data" 	source="assets\UV_GRID.TIM"/>
+		<file name="ORB.PLY"  		type="data" 	source="assets\ORB.PLY"/>
+		<file name="ORB.TIM"  		type="data" 	source="assets\ORB.TIM"/>
 
             
             <!-- <dir name="SUBDIR01">

@@ -55,7 +55,7 @@ u_long LoadTexture(char *filename) {
 }
 
 void Setup(void) {
-	HeapSize(0x5000); // 20480
+	HeapSize(0x6000); // 20480
 	ScreenInit();
 	CdInit();
 	JoyPadInit();
@@ -71,8 +71,8 @@ void Setup(void) {
 	setVector(&obj.vel, 0, 0, 0);
 	setVector(&obj.acc, 0, 1, 0);
 
-	u_long tsize = LoadTexture("\\MILK.TIM;1");
-	LoadPly("\\MILK.PLY;1", &obj, tsize);
+	u_long tsize = LoadTexture("\\ORB.TIM;1");
+	LoadPly("\\ORB.PLY;1", &obj, tsize);
 }
 
 void JoyPadCheckAll(void) {
@@ -120,6 +120,9 @@ void Update(void) {
 	SetTransMatrix(&viewmat);
 
 	for(int i=0, q=0; i<obj.numfaces * 3; i+=3, q++) {
+
+		LINE_F2 *line0, *line1, *line2;
+
 		poly = (POLY_FT3*) GetNextPrim(); // flat triangle
 		setPolyFT3(poly); // init a flat triangle
 		setRGB0(poly, 127, 127, 127); // 127 neutral color
@@ -148,7 +151,30 @@ void Update(void) {
 		if((otz > 0) && (otz < OT_LEN)) {
 			addPrim(GetOTAt(GetCurrentBuffer(), otz), poly);
 			IncrementNextPrim(sizeof(POLY_FT3));
+		
+			// draw lines
+			line0 = (LINE_F2*) GetNextPrim();
+			SetLineF2(line0);
+			setXY2(line0, poly->x0, poly->y0, poly->x1, poly->y1);
+			setRGB0(line0,0,0,0);
+			addPrim(GetOTAt(GetCurrentBuffer(), 0), line0);
+			IncrementNextPrim(sizeof(LINE_F2));
+			
+			line1 = (LINE_F2*) GetNextPrim();
+			SetLineF2(line1);
+			setXY2(line1, poly->x1, poly->y1, poly->x2, poly->y2);
+			setRGB0(line1,0,0,0);
+			addPrim(GetOTAt(GetCurrentBuffer(), 0), line1);
+			IncrementNextPrim(sizeof(LINE_F2));
+
+			line2 = (LINE_F2*) GetNextPrim();
+			SetLineF2(line2);
+			setXY2(line2, poly->x2, poly->y2, poly->x0, poly->y0);
+			setRGB0(line2,0,0,0);
+			addPrim(GetOTAt(GetCurrentBuffer(), 0), line2);
+			IncrementNextPrim(sizeof(LINE_F2));
 		}
+	
 	}
 	obj.rotation.vy += 20;
 }

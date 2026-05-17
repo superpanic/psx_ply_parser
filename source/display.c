@@ -53,6 +53,3 @@ static void SetTheBackgroundClearColor(char r, char g, char b) {
 u_short GetCurrentBuffer(void) {
 	return currbuff;
 }
-
-// TODO:
-// implement getters and setters for screen and for currbuff
